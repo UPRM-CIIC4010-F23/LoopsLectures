@@ -69,6 +69,9 @@ public:
     // type within the vector of Account's. Returns -1 if no such Account exists.
     static int findByType(vector<Account> accounts, AccountType type);
 
+    // template <typename Iterator>
+    // static int findByType(Iterator begin, Iterator end, AccountType type);
+
     // EXERCISE #2: Returns de count of Account's of the parameter type that exist in the
     // parameter vector.
     static int countByType(vector<Account> accounts, AccountType type);
@@ -116,6 +119,19 @@ int Account::findByType(vector<Account> accounts, AccountType type)
 
 }
 
+// template<typename Iterator>
+// int Account::findByType(Iterator begin, Iterator end, AccountType type)
+// {
+
+//     for (auto it=begin; it!=end; it++) {
+//         if (it->getType() == type) {
+//             return i;
+//         }
+//     }
+//     return -1;
+
+// }
+
 // EXERCISE #2: Returns de count of Account's of the parameter type that exist in the
 // parameter vector.
 int Account::countByType(vector<Account> accounts, AccountType type)
@@ -135,7 +151,14 @@ int Account::countByType(vector<Account> accounts, AccountType type)
 // parametter vector. Returns -1 if the vector is empty.
 int Account::largestBalance(vector<Account> accounts) {
 
-    return -1;
+    if (accounts.size() == 0) return -1;
+    int maxPos = 0;
+    for (int i=1; i<accounts.size(); i++) {
+        if (accounts[i].getBalance() > accounts[maxPos].getBalance()) {
+            maxPos = i;
+        }
+    }
+    return maxPos;
 
 }
 
@@ -145,17 +168,34 @@ int Account::largestBalance(vector<Account> accounts) {
 double Account::averageBalance(vector<Account> accounts, AccountType type)
 {
 
-    return 0;
+    int numAccounts=0;
+    double sumBalance=0;
+    for (int i=0; i<accounts.size(); i++) {
+        if (accounts[i].getType() == type) {
+            sumBalance += accounts[i].getBalance();
+            numAccounts ++;
+        }
+    }
+    if (numAccounts == 0) {
+        return -1;
+    }
+    return sumBalance/numAccounts;
 
 }
 
 // EXERCISE #5: Returns true if there are at least two Account's of the same type and
-// with tehe same account number within the parametter vector.
+// with the same account number within the parametter vector.
 bool Account::hasDuplicates(vector<Account> accounts) 
 {
-
+    for (int i=0; i<accounts.size(); i++) {
+        for (int j=i+1; j<accounts.size(); j++) {
+            if ((accounts[i].getAccNo()  == accounts[j].getAccNo()) &&
+            (accounts[i].getType() == accounts[j].getType())) {
+                return true;
+            }
+        }
+    }
     return false;
-
 }
 
 // EXERCISE #6: Remove the first occurrence of an Account with a negative balance if
@@ -163,8 +203,12 @@ bool Account::hasDuplicates(vector<Account> accounts)
 void Account::removeFirstNegative(vector<Account> &accounts)
 {
 
-    // YOUR CODE HERE
-
+    for (auto it = accounts.begin(); it != accounts.end(); it++) {
+        if (it->getBalance() < 0) {
+            accounts.erase(it);
+            return;
+        }
+    }
 
 }
 
@@ -173,7 +217,14 @@ void Account::removeFirstNegative(vector<Account> &accounts)
 void Account::removeAllNegative(vector<Account> &accounts)
 {
 
-    // YOUR CODE HERE
+    auto it = accounts.begin();
+    while (it != accounts.end()) {
+        if (it->getBalance() < 0) {
+            it = accounts.erase(it);
+        } else {
+            it++;
+        }
+    }
 
 }
 
@@ -185,7 +236,19 @@ void Account::removeAllNegative(vector<Account> &accounts)
 // in the parameter vectors.
 vector<Account> Account::combine(vector<Account> A, vector<Account> B)
 {
-    vector<Account> result;
+    vector<Account> result = vector<Account>(A);
+
+    for (auto itB = B.begin(); itB != B.end(); itB++) {
+        for (auto itA = A.begin(); itA != A.end(); itA++) {
+            if ((itA->getAccNo() == itB->getAccNo()) &&
+                (itA->getType() == itB->getType())) {
+                itA->setBalance(itA->getBalance() + itB->getBalance());
+            } else {
+                result.push_back(*itB);
+            }
+        }
+    }
+
     return result;
 }
 
