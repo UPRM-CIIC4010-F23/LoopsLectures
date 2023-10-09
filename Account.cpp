@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <list>
 #include <iostream>
 
 using namespace std;
@@ -69,12 +70,15 @@ public:
     // type within the vector of Account's. Returns -1 if no such Account exists.
     static int findByType(vector<Account> accounts, AccountType type);
 
-    // template <typename Iterator>
-    // static int findByType(Iterator begin, Iterator end, AccountType type);
+    template <typename Iterator>
+    static int findByType(Iterator begin, Iterator end, AccountType type);
 
     // EXERCISE #2: Returns de count of Account's of the parameter type that exist in the
     // parameter vector.
     static int countByType(vector<Account> accounts, AccountType type);
+
+    template <typename Iterator>
+    static int countByType(Iterator begin, Iterator end, AccountType type);
 
     // EXERCISE #3: Return the position of the Account with the largest balance in the
     // parametter vector. Returns -1 if the vector is empty.
@@ -119,18 +123,20 @@ int Account::findByType(vector<Account> accounts, AccountType type)
 
 }
 
-// template<typename Iterator>
-// int Account::findByType(Iterator begin, Iterator end, AccountType type)
-// {
+template<typename Iterator>
+int Account::findByType(Iterator begin, Iterator end, AccountType type)
+{
 
-//     for (auto it=begin; it!=end; it++) {
-//         if (it->getType() == type) {
-//             return i;
-//         }
-//     }
-//     return -1;
+    int pos=0;
+    for (auto it=begin; it!=end; it++) {
+        if (it->getType() == type) {
+            return pos;
+        }
+        pos++;
+    }
+    return -1;
 
-// }
+}
 
 // EXERCISE #2: Returns de count of Account's of the parameter type that exist in the
 // parameter vector.
@@ -140,6 +146,20 @@ int Account::countByType(vector<Account> accounts, AccountType type)
     int counter = 0;
     for (int i = 0; i < accounts.size(); i++ ) {
         if (accounts[i].getType() == type) {
+            counter ++;
+        }
+    }
+    return counter;
+
+}
+
+template <typename Iterator>
+int Account::countByType(Iterator begin, Iterator end, AccountType type)
+{
+
+    int counter = 0;
+    for (Iterator it = begin; it != end; it++) {
+        if (it->getType() == type) {
             counter ++;
         }
     }
@@ -234,151 +254,158 @@ void Account::removeAllNegative(vector<Account> &accounts)
 // and account type.  If the same Account appears in both parameter vectors, it should
 // appear only once in the result vector with a balance equal to the sum of both balances
 // in the parameter vectors.
-vector<Account> Account::combine(vector<Account> A, vector<Account> B)
-{
+vector<Account> Account::combine(vector<Account> A, vector<Account> B) {
     vector<Account> result = vector<Account>(A);
 
     for (auto itB = B.begin(); itB != B.end(); itB++) {
-        for (auto itA = A.begin(); itA != A.end(); itA++) {
-            if ((itA->getAccNo() == itB->getAccNo()) &&
-                (itA->getType() == itB->getType())) {
-                itA->setBalance(itA->getBalance() + itB->getBalance());
-            } else {
-                result.push_back(*itB);
+        bool accountFound = false;
+        for (auto itR = result.begin(); itR != result.end(); itR++) {
+            if ((itR->getAccNo() == itB->getAccNo()) &&
+                (itR->getType() == itB->getType())) {
+                itR->setBalance(itR->getBalance() + itB->getBalance());
+                accountFound = true;
             }
         }
+        if (!accountFound) {
+            result.push_back(*itB);
+        }
     }
-
     return result;
 }
 
-//----------------------TEST CASES-----------------------
+    //----------------------TEST CASES-----------------------
 
-int main()
-{
+    int main() {
 
-    cout << "Hello Tests" << endl;
+        cout << "Hello Tests" << endl;
 
-    Account ca1(121, 897544, AccountType::CHECKING);
-    Account ca2(123, 632593, AccountType::CHECKING);
-    Account ca3(124, 5896314, AccountType::CHECKING);
+        Account ca1(121, 897544, AccountType::CHECKING);
+        Account ca2(123, 632593, AccountType::CHECKING);
+        Account ca3(124, 5896314, AccountType::CHECKING);
 
-    Account sa1(122, 545, AccountType::SAVINGS);
-    Account sa2(125, 1456, AccountType::SAVINGS);
-    Account sa3(126, 789, AccountType::SAVINGS);
-    Account sa4(127, 159, AccountType::SAVINGS);
-    Account sa5(128, 545, AccountType::SAVINGS);
+        Account sa1(122, 545, AccountType::SAVINGS);
+        Account sa2(125, 1456, AccountType::SAVINGS);
+        Account sa3(126, 789, AccountType::SAVINGS);
+        Account sa4(127, 159, AccountType::SAVINGS);
+        Account sa5(128, 545, AccountType::SAVINGS);
 
-    Account na1(200, -54, AccountType::SAVINGS);
-    Account na2(201, -545, AccountType::SAVINGS);
-    Account na3(202, -5, AccountType::CHECKING);
+        Account na1(200, -54, AccountType::SAVINGS);
+        Account na2(201, -545, AccountType::SAVINGS);
+        Account na3(202, -5, AccountType::CHECKING);
 
-    Account ea1(122, 6785, AccountType::ENTERPRISE);
-    Account eea2(129, 693, AccountType::ENTERPRISE);
-    Account ea3(130, 4587, AccountType::ENTERPRISE);
-    Account ea4(131, 9632, AccountType::ENTERPRISE);
-    Account ea5(132, 7896, AccountType::ENTERPRISE);
+        Account ea1(122, 6785, AccountType::ENTERPRISE);
+        Account eea2(129, 693, AccountType::ENTERPRISE);
+        Account ea3(130, 4587, AccountType::ENTERPRISE);
+        Account ea4(131, 9632, AccountType::ENTERPRISE);
+        Account ea5(132, 7896, AccountType::ENTERPRISE);
 
-    vector<Account> emptyVector;
-    vector<Account> savingsVector{sa1, sa2, sa3, sa4, sa5};
-    vector<Account> checkingVector{ca1, ca2, ca3};
-    vector<Account> mixedVector1{sa1, sa2, sa3, sa4, sa5, ca1, ca2, ca3};
-    vector<Account> mixedVector2{ca1, ca2, ca3, sa1, sa2, sa3, sa5};
-    vector<Account> duplicateVector1{ca1, ca2, ca3, sa1, sa2, sa3, sa4, sa5, ca1};
-    vector<Account> duplicateVector2{ca1, ca2, ca3, sa1, sa2, sa3, sa4, ca3, sa5};
-    vector<Account> duplicateVector3{ca1, ca1, ca2, ca3, sa1, sa2, sa3, sa4, sa5};
-    vector<Account> negativeVector1{na1, na2, na3, sa1, sa2, sa3, sa4, sa5};
-    vector<Account> negativeVector2{sa1, na1, na2, na3, sa2, sa3, sa4, sa5};
-    vector<Account> negativeVector3{sa1, sa2, sa3, sa4, sa5, na3};
-    vector<Account> combineVector1{sa1, sa2, sa3};
-    vector<Account> combineVector2{ca1, ca2, sa3};
+        vector<Account> emptyVector;
+        vector<Account> savingsVector{sa1, sa2, sa3, sa4, sa5};
+        vector<Account> checkingVector{ca1, ca2, ca3};
+        vector<Account> mixedVector1{sa1, sa2, sa3, sa4, sa5, ca1, ca2, ca3};
 
-    cout << "Test findByType" << endl;
-    cout << "FindByType #1: " << ((Account::findByType(emptyVector, AccountType::ENTERPRISE) == -1) ? "Passed" : "Failed") << endl; // -1
-    cout << "FindByType #2: " << ((Account::findByType(savingsVector, AccountType::SAVINGS) == 0)  ? "Passed" : "Failed") << endl;  // 0
-    cout << "FindByType #3: " << ((Account::findByType(savingsVector, AccountType::CHECKING) == -1) ? "Passed" : "Failed") << endl; // -1
-    cout << "FindByType #4: " << ((Account::findByType(mixedVector1, AccountType::CHECKING) == 5) ? "Passed" : "Failed") << endl;  // 5
-    cout << "FindByType #5: " << ((Account::findByType(mixedVector1, AccountType::SAVINGS) == 0) ? "Passed" : "Failed") << endl;   // 0
+        list<Account> mixedContainer1{sa1, sa2, sa3, sa4, sa5, ca1, ca2, ca3};
 
-    cout << "Test countByType" << endl;
-    cout << "CountByType #1: " << ((Account::countByType(emptyVector, AccountType::ENTERPRISE) == 0) ? "Passed" : "Failed") << endl; // 0
-    cout << "CountByType #2: " << ((Account::countByType(savingsVector, AccountType::SAVINGS) == 5) ? "Passed" : "Failed") << endl;  // 5
-    cout << "CountByType #3: " << ((Account::countByType(savingsVector, AccountType::CHECKING) == 0) ? "Passed" : "Failed") << endl; // 0
-    cout << "CountByType #4: " << ((Account::countByType(mixedVector1, AccountType::CHECKING) == 3) ? "Passed" : "Failed") << endl;  // 3
-    cout << "CountByType #5: " << ((Account::countByType(mixedVector1, AccountType::SAVINGS) == 5) ? "Passed" : "Failed") << endl;   // 5
+        vector<Account> mixedVector2{ca1, ca2, ca3, sa1, sa2, sa3, sa5};
+        vector<Account> duplicateVector1{ca1, ca2, ca3, sa1, sa2, sa3, sa4, sa5, ca1};
+        vector<Account> duplicateVector2{ca1, ca2, ca3, sa1, sa2, sa3, sa4, ca3, sa5};
+        vector<Account> duplicateVector3{ca1, ca1, ca2, ca3, sa1, sa2, sa3, sa4, sa5};
+        vector<Account> negativeVector1{na1, na2, na3, sa1, sa2, sa3, sa4, sa5};
+        vector<Account> negativeVector2{sa1, na1, na2, na3, sa2, sa3, sa4, sa5};
+        vector<Account> negativeVector3{sa1, sa2, sa3, sa4, sa5, na3};
+        vector<Account> combineVector1{sa1, sa2, sa3};
+        vector<Account> combineVector2{ca1, ca2, sa3};
 
-    cout << "Test largestBalance" << endl;
-    cout << "LargestBalance #1: " << ((Account::largestBalance(emptyVector) == -1) ? "Passed" : "Failed") << endl;    // -1
-    cout << "LargestBalance #2: " << ((Account::largestBalance(savingsVector) == 1) ? "Passed" : "Failed") << endl;  // 1
-    cout << "LargestBalance #3: " << ((Account::largestBalance(checkingVector) == 2) ? "Passed" : "Failed") << endl; // 2
-    cout << "LargestBalance #4: " << ((Account::largestBalance(mixedVector1) == 7) ? "Passed" : "Failed") << endl;   // 7
-    cout << "LargestBalance #5: " << ((Account::largestBalance(mixedVector2) == 2) ? "Passed" : "Failed") << endl;   // 2
+        cout << "Test findByType" << endl;
+        cout << "FindByType #1: " << ((Account::findByType(emptyVector, AccountType::ENTERPRISE) == -1) ? "Passed" : "Failed") << endl; // -1
+        cout << "FindByType #2: " << ((Account::findByType(savingsVector, AccountType::SAVINGS) == 0) ? "Passed" : "Failed") << endl;   // 0
+        cout << "FindByType #3: " << ((Account::findByType(savingsVector, AccountType::CHECKING) == -1) ? "Passed" : "Failed") << endl; // -1
+        cout << "FindByType #4: " << ((Account::findByType(mixedVector1, AccountType::CHECKING) == 5) ? "Passed" : "Failed") << endl;   // 5
+        cout << "FindByType #5: " << ((Account::findByType(mixedVector1, AccountType::SAVINGS) == 0) ? "Passed" : "Failed") << endl;    // 0
 
-    cout << "Test averageBalance" << endl;
-    cout << "AverageBalance #1: " << ((Account::averageBalance(emptyVector, AccountType::SAVINGS) == -1) ? "Passed " : "Failed ") << endl;    // -1
-    cout << "AverageBalance #2: " << ((Account::averageBalance(savingsVector, AccountType::SAVINGS) == 698.8) ? "Passed " : "Failed ") << endl;  // 698.8
-    cout << "AverageBalance #3: " << ((Account::averageBalance(checkingVector, AccountType::SAVINGS) == -1) ? "Passed " : "Failed ") << endl; // -1
-    cout << "AverageBalance #4: " << ((Account::averageBalance(mixedVector1, AccountType::SAVINGS) == 698.8) ? "Passed " : "Failed ") << endl;   // 698.8
-    cout << "AverageBalance #5: " << ((Account::averageBalance(mixedVector2, AccountType::SAVINGS) == 833.75) ? "Passed " : "Failed ") << endl;   // 833.75
+        cout << "FindByType IT #5: " << ((Account::findByType(mixedContainer1.begin(), mixedContainer1.end(), AccountType::SAVINGS) == 0) ? "Passed" : "Failed") << endl;    // 0
 
-    cout << "Test hasDuplicates" << endl;
-    cout << (Account::hasDuplicates(emptyVector) ? "Failed" : "Passed") << endl;
-    cout << (Account::hasDuplicates(savingsVector) ? "Failed" : "Passed") << endl;
-    cout << (Account::hasDuplicates(checkingVector) ? "Failed" : "Passed") << endl;
-    cout << (Account::hasDuplicates(mixedVector1) ? "Failed" : "Passed") << endl;
-    cout << (Account::hasDuplicates(mixedVector2) ? "Failed" : "Passed") << endl;
-    cout << (Account::hasDuplicates(duplicateVector1) ? "Passed" : "Failed") << endl;
-    cout << (Account::hasDuplicates(duplicateVector2) ? "Passed" : "Failed") << endl;
-    cout << (Account::hasDuplicates(duplicateVector3) ? "Passed" : "Failed") << endl;
+        cout << "Test countByType" << endl;
+        cout << "CountByType #1: " << ((Account::countByType(emptyVector, AccountType::ENTERPRISE) == 0) ? "Passed" : "Failed") << endl; // 0
+        cout << "CountByType #2: " << ((Account::countByType(savingsVector, AccountType::SAVINGS) == 5) ? "Passed" : "Failed") << endl;  // 5
+        cout << "CountByType #3: " << ((Account::countByType(savingsVector, AccountType::CHECKING) == 0) ? "Passed" : "Failed") << endl; // 0
+        cout << "CountByType #4: " << ((Account::countByType(mixedVector1, AccountType::CHECKING) == 3) ? "Passed" : "Failed") << endl;  // 3
+        cout << "CountByType #5: " << ((Account::countByType(mixedVector1, AccountType::SAVINGS) == 5) ? "Passed" : "Failed") << endl;   // 5
 
-    cout << "Test removeFirstNegative 1" << endl;
-    Account::removeFirstNegative(emptyVector);
-    cout << (emptyVector.size() == 0 ? "PASSED" : "FAILED") << endl;
-    Account::removeFirstNegative(savingsVector);
-    cout << (savingsVector.size() == 5 ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << "CountByType IT #5: " << ((Account::countByType(mixedContainer1.begin(), mixedContainer1.end(), AccountType::SAVINGS) == 5) ? "Passed" : "Failed") << endl;   // 5
 
-    cout << "Test removeFirstNegative 2" << endl;
-    Account::removeFirstNegative(negativeVector1);
-    cout << (negativeVector1.size() == 7 ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[0].getAccNo() == na2.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[1].getAccNo() == na3.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[2].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[3].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[4].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[5].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[6].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << "Test largestBalance" << endl;
+        cout << "LargestBalance #1: " << ((Account::largestBalance(emptyVector) == -1) ? "Passed" : "Failed") << endl;   // -1
+        cout << "LargestBalance #2: " << ((Account::largestBalance(savingsVector) == 1) ? "Passed" : "Failed") << endl;  // 1
+        cout << "LargestBalance #3: " << ((Account::largestBalance(checkingVector) == 2) ? "Passed" : "Failed") << endl; // 2
+        cout << "LargestBalance #4: " << ((Account::largestBalance(mixedVector1) == 7) ? "Passed" : "Failed") << endl;   // 7
+        cout << "LargestBalance #5: " << ((Account::largestBalance(mixedVector2) == 2) ? "Passed" : "Failed") << endl;   // 2
 
-    cout << "Test removeAllNegative 1" << endl;
-    Account::removeAllNegative(emptyVector);
-    cout << (emptyVector.size() == 0 ? "PASSED" : "FAILED") << endl;
-    Account::removeAllNegative(savingsVector);
-    cout << (savingsVector.size() == 5 ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (savingsVector[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << "Test averageBalance" << endl;
+        cout << "AverageBalance #1: " << ((Account::averageBalance(emptyVector, AccountType::SAVINGS) == -1) ? "Passed " : "Failed ") << endl;      // -1
+        cout << "AverageBalance #2: " << ((Account::averageBalance(savingsVector, AccountType::SAVINGS) == 698.8) ? "Passed " : "Failed ") << endl; // 698.8
+        cout << "AverageBalance #3: " << ((Account::averageBalance(checkingVector, AccountType::SAVINGS) == -1) ? "Passed " : "Failed ") << endl;   // -1
+        cout << "AverageBalance #4: " << ((Account::averageBalance(mixedVector1, AccountType::SAVINGS) == 698.8) ? "Passed " : "Failed ") << endl;  // 698.8
+        cout << "AverageBalance #5: " << ((Account::averageBalance(mixedVector2, AccountType::SAVINGS) == 833.75) ? "Passed " : "Failed ") << endl; // 833.75
 
-    cout << "Test removeAllNegative 2" << endl;
-    Account::removeAllNegative(negativeVector1);
-    cout << (negativeVector1.size() == 5 ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
-    cout << (negativeVector1[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << "Test hasDuplicates" << endl;
+        cout << (Account::hasDuplicates(emptyVector) ? "Failed" : "Passed") << endl;
+        cout << (Account::hasDuplicates(savingsVector) ? "Failed" : "Passed") << endl;
+        cout << (Account::hasDuplicates(checkingVector) ? "Failed" : "Passed") << endl;
+        cout << (Account::hasDuplicates(mixedVector1) ? "Failed" : "Passed") << endl;
+        cout << (Account::hasDuplicates(mixedVector2) ? "Failed" : "Passed") << endl;
+        cout << (Account::hasDuplicates(duplicateVector1) ? "Passed" : "Failed") << endl;
+        cout << (Account::hasDuplicates(duplicateVector2) ? "Passed" : "Failed") << endl;
+        cout << (Account::hasDuplicates(duplicateVector3) ? "Passed" : "Failed") << endl;
 
-    cout << "Test combine" << endl;
-    vector<Account> result = Account::combine(combineVector1, combineVector2);
-    cout << ((result.size() == 5) ? "PASSED" : "FAILED") << endl;
-    cout << (sa1.exists(result) ? "PASSED" : "FAILED") << endl;
-    cout << (sa2.exists(result) ? "PASSED" : "FAILED") << endl;
-    cout << (sa3.exists(result) ? "PASSED" : "FAILED") << endl;
-    cout << (ca1.exists(result) ? "PASSED" : "FAILED") << endl;
-    cout << (ca2.exists(result) ? "PASSED" : "FAILED") << endl;
-}
+        cout << "Test removeFirstNegative 1" << endl;
+        Account::removeFirstNegative(emptyVector);
+        cout << (emptyVector.size() == 0 ? "PASSED" : "FAILED") << endl;
+        Account::removeFirstNegative(savingsVector);
+        cout << (savingsVector.size() == 5 ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+
+        cout << "Test removeFirstNegative 2" << endl;
+        Account::removeFirstNegative(negativeVector1);
+        cout << (negativeVector1.size() == 7 ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[0].getAccNo() == na2.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[1].getAccNo() == na3.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[2].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[3].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[4].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[5].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[6].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+
+        cout << "Test removeAllNegative 1" << endl;
+        Account::removeAllNegative(emptyVector);
+        cout << (emptyVector.size() == 0 ? "PASSED" : "FAILED") << endl;
+        Account::removeAllNegative(savingsVector);
+        cout << (savingsVector.size() == 5 ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (savingsVector[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+
+        cout << "Test removeAllNegative 2" << endl;
+        Account::removeAllNegative(negativeVector1);
+        cout << (negativeVector1.size() == 5 ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[0].getAccNo() == sa1.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[1].getAccNo() == sa2.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[2].getAccNo() == sa3.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[3].getAccNo() == sa4.getAccNo() ? "PASSED" : "FAILED") << endl;
+        cout << (negativeVector1[4].getAccNo() == sa5.getAccNo() ? "PASSED" : "FAILED") << endl;
+
+        cout << "Test combine" << endl;
+        vector<Account> result = Account::combine(combineVector1, combineVector2);
+        cout << ((result.size() == 5) ? "PASSED" : "FAILED") << endl;
+        cout << (sa1.exists(result) ? "PASSED" : "FAILED") << endl;
+        cout << (sa2.exists(result) ? "PASSED" : "FAILED") << endl;
+        cout << (sa3.exists(result) ? "PASSED" : "FAILED") << endl;
+        cout << (ca1.exists(result) ? "PASSED" : "FAILED") << endl;
+        cout << (ca2.exists(result) ? "PASSED" : "FAILED") << endl;
+    }
